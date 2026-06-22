@@ -24,4 +24,14 @@ class Project extends Model
     {
         return $this->hasMany(Issue::class);
     }
+
+    public function editModalName(): string
+    {
+        return 'edit-project-'.$this->id;
+    }
+
+    public function deleteModalName(): string
+    {
+        return 'delete-project-'.$this->id;
+    }
 }
