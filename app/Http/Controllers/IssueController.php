@@ -7,6 +7,7 @@ use App\Http\Requests\Issue\UpdateIssueRequest;
 use App\Models\Issue;
 use App\Models\Project;
 use App\Models\Tag;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -28,7 +29,6 @@ class IssueController extends Controller
             ->get();
 
         $tags = Tag::query()
-            ->whereHas('issues.project', fn ($query) => $query->where('user_id', $request->user()->id))
             ->orderBy('name')
             ->get();
 
@@ -43,9 +43,11 @@ class IssueController extends Controller
     {
         $this->authorize('view', $issue);
 
-        $issue->load(['project', 'tags', 'comments' => fn ($query) => $query->latest()]);
+        $issue->load(['project', 'tags']);
 
-        return view('issues.show', compact('issue'));
+        $allTags = Tag::query()->orderBy('name')->get();
+
+        return view('issues.show', compact('issue', 'allTags'));
     }
 
     public function store(StoreIssueRequest $request, Project $project): RedirectResponse
@@ -76,5 +78,45 @@ class IssueController extends Controller
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'issue-deleted');
+    }
+
+    public function attachTag(Issue $issue, Tag $tag): JsonResponse
+    {
+        $this->authorize('update', $issue);
+
+        if ($issue->tags()->where('tags.id', $tag->id)->exists()) {
+            return response()->json([
+                'message' => __('This tag is already attached.'),
+            ], 422);
+        }
+
+        $issue->tags()->attach($tag);
+
+        return response()->json([
+            'tag' => $this->tagPayload($tag),
+        ]);
+    }
+
+    public function detachTag(Issue $issue, Tag $tag): JsonResponse
+    {
+        $this->authorize('update', $issue);
+
+        $issue->tags()->detach($tag);
+
+        return response()->json([
+            'tag' => $this->tagPayload($tag),
+        ]);
+    }
+
+    /**
+     * @return array<string, int|string|null>
+     */
+    private function tagPayload(Tag $tag): array
+    {
+        return [
+            'id' => $tag->id,
+            'name' => $tag->name,
+            'color' => $tag->color ?? '#6b7280',
+        ];
     }
 }
