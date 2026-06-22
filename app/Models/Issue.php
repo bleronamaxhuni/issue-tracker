@@ -37,4 +37,23 @@ class Issue extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
+
+    public const STATUSES = ['open', 'in_progress', 'closed'];
+
+    public const PRIORITIES = ['low', 'medium', 'high'];
+
+    public function editModalName(): string
+    {
+        return 'edit-issue-'.$this->id;
+    }
+
+    public function deleteModalName(): string
+    {
+        return 'delete-issue-'.$this->id;
+    }
+
+    public function statusLabel(): string
+    {
+        return str_replace('_', ' ', $this->status);
+    }
 }
