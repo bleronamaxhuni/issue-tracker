@@ -29,6 +29,16 @@
                     <textarea id="description" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('description')" />
                 </div>
+                <div>
+                    <x-input-label for="start_date" :value="__('Start date')" />
+                    <x-text-input id="start_date" name="start_date" type="date" class="mt-1 block w-full" :value="old('start_date')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
+                </div>
+                <div>
+                    <x-input-label for="deadline" :value="__('Deadline')" />
+                    <x-text-input id="deadline" name="deadline" type="date" class="mt-1 block w-full" :value="old('deadline')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
@@ -63,6 +73,19 @@
                                         @if ($project->description)
                                             <p class="mt-1 text-sm text-gray-600">{{ $project->description }}</p>
                                         @endif
+                                        @if ($project->start_date || $project->deadline)
+                                            <p class="mt-1 text-xs text-gray-400">
+                                                @if ($project->start_date)
+                                                    {{ __('Start') }}: {{ $project->start_date->format('M j, Y') }}
+                                                @endif
+                                                @if ($project->start_date && $project->deadline)
+                                                    <span class="mx-1">·</span>
+                                                @endif
+                                                @if ($project->deadline)
+                                                    {{ __('Deadline') }}: {{ $project->deadline->format('M j, Y') }}
+                                                @endif
+                                            </p>
+                                        @endif
                                         <p class="mt-1 text-xs text-gray-400">
                                             {{ trans_choice(':count issue|:count issues', $project->issues_count, ['count' => $project->issues_count]) }}
                                         </p>
@@ -96,6 +119,16 @@
                         <x-input-label for="description-{{ $project->id }}" :value="__('Description')" />
                         <textarea id="description-{{ $project->id }}" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                    </div>
+                    <div>
+                        <x-input-label for="start_date-{{ $project->id }}" :value="__('Start date')" />
+                        <x-text-input id="start_date-{{ $project->id }}" name="start_date" type="date" class="mt-1 block w-full" :value="old('start_date', $project->start_date?->format('Y-m-d'))" />
+                        <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
+                    </div>
+                    <div>
+                        <x-input-label for="deadline-{{ $project->id }}" :value="__('Deadline')" />
+                        <x-text-input id="deadline-{{ $project->id }}" name="deadline" type="date" class="mt-1 block w-full" :value="old('deadline', $project->deadline?->format('Y-m-d'))" />
+                        <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">

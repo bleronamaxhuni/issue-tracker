@@ -22,6 +22,8 @@ class ProjectFactory extends Factory
             'user_id' => User::factory(),
             'name' => fake()->words(3, true),
             'description' => fake()->optional()->paragraph(),
+            'start_date' => fake()->optional()->dateTimeBetween('-1 month', 'now'),
+            'deadline' => fake()->optional()->dateTimeBetween('now', '+3 months'),
         ];
     }
 }

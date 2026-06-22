@@ -9,11 +9,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'description'])]
+#[Fillable(['user_id', 'name', 'description', 'start_date', 'deadline'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'deadline' => 'date',
+        ];
+    }
 
     public function user(): BelongsTo
     {

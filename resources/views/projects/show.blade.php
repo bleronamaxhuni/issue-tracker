@@ -80,6 +80,22 @@
                 <div class="p-6 text-gray-900">
                     <h3 class="text-sm font-medium text-gray-500">{{ __('Description') }}</h3>
                     <p class="mt-2 text-gray-900">{{ $project->description ?: __('No description provided.') }}</p>
+                    @if ($project->start_date || $project->deadline)
+                        <dl class="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+                            @if ($project->start_date)
+                                <div>
+                                    <dt class="font-medium text-gray-500">{{ __('Start date') }}</dt>
+                                    <dd class="mt-1 text-gray-900">{{ $project->start_date->format('M j, Y') }}</dd>
+                                </div>
+                            @endif
+                            @if ($project->deadline)
+                                <div>
+                                    <dt class="font-medium text-gray-500">{{ __('Deadline') }}</dt>
+                                    <dd class="mt-1 text-gray-900">{{ $project->deadline->format('M j, Y') }}</dd>
+                                </div>
+                            @endif
+                        </dl>
+                    @endif
                 </div>
             </div>
 
@@ -137,6 +153,16 @@
                     <x-input-label for="project-description" :value="__('Description')" />
                     <textarea id="project-description" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                </div>
+                <div>
+                    <x-input-label for="project-start_date" :value="__('Start date')" />
+                    <x-text-input id="project-start_date" name="start_date" type="date" class="mt-1 block w-full" :value="old('start_date', $project->start_date?->format('Y-m-d'))" />
+                    <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
+                </div>
+                <div>
+                    <x-input-label for="project-deadline" :value="__('Deadline')" />
+                    <x-text-input id="project-deadline" name="deadline" type="date" class="mt-1 block w-full" :value="old('deadline', $project->deadline?->format('Y-m-d'))" />
+                    <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">
