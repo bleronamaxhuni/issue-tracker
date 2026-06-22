@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-stone-50 text-stone-900;
+    }
+
+    a {
+        @apply transition-colors;
+    }
+}
+
+@layer components {
+    .input {
+        @apply block w-full rounded-md border-stone-300 bg-white text-sm text-stone-900 shadow-none focus:border-stone-800 focus:ring-stone-800;
+    }
+
+    .link {
+        @apply font-medium text-stone-900 underline decoration-stone-300 underline-offset-2 hover:decoration-stone-900;
+    }
+
+    .meta {
+        @apply text-sm text-stone-500;
+    }
+
+    .section-title {
+        @apply text-xs font-semibold uppercase tracking-wider text-stone-500;
+    }
+
+    .panel {
+        @apply border border-stone-200 bg-white;
+    }
+
+    .list-row {
+        @apply border-b border-stone-200 py-5 last:border-0;
+    }
+
+    .page-title {
+        @apply text-2xl font-semibold tracking-tight text-stone-900;
+    }
+
+    .page-subtitle {
+        @apply mt-1 text-sm text-stone-500;
+    }
+
+    .stat-value {
+        @apply text-3xl font-semibold tabular-nums tracking-tight text-stone-900;
+    }
+}

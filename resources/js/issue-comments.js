@@ -25,22 +25,27 @@ const jsonRequest = async (url, options = {}) => {
 
 const createCommentItem = (comment) => {
     const item = document.createElement('li');
-    item.className = 'py-4';
+    item.className = 'border border-stone-200 bg-stone-50 p-4';
     item.dataset.commentId = String(comment.id);
 
+    const header = document.createElement('div');
+    header.className = 'flex items-baseline justify-between gap-2';
+
     const author = document.createElement('p');
-    author.className = 'text-sm font-medium text-gray-900';
+    author.className = 'text-sm font-medium text-stone-900';
     author.textContent = comment.author_name;
 
     const meta = document.createElement('p');
-    meta.className = 'text-xs text-gray-400';
+    meta.className = 'text-xs text-stone-400';
     meta.textContent = comment.created_at;
 
+    header.append(author, meta);
+
     const body = document.createElement('p');
-    body.className = 'mt-1 text-sm text-gray-600';
+    body.className = 'mt-2 text-sm leading-relaxed text-stone-700 whitespace-pre-wrap';
     body.textContent = comment.body;
 
-    item.append(author, meta, body);
+    item.append(header, body);
 
     return item;
 };

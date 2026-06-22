@@ -56,4 +56,11 @@ class Issue extends Model
     {
         return str_replace('_', ' ', $this->status);
     }
+
+    public function isOverdue(): bool
+    {
+        return $this->due_date
+            && $this->status !== 'closed'
+            && $this->due_date->isPast();
+    }
 }

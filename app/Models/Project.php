@@ -42,4 +42,16 @@ class Project extends Model
     {
         return 'delete-project-'.$this->id;
     }
+
+    public function isDeadlineOverdue(): bool
+    {
+        return $this->deadline?->isPast() ?? false;
+    }
+
+    public function isDeadlineSoon(): bool
+    {
+        return $this->deadline
+            && ! $this->deadline->isPast()
+            && $this->deadline->diffInDays(now()) <= 7;
+    }
 }

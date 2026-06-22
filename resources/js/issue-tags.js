@@ -22,9 +22,8 @@ const createAttachedChip = (tag) => {
     button.type = 'button';
     button.dataset.tagId = String(tag.id);
     button.dataset.action = 'detach';
-    button.className = 'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white hover:opacity-80';
-    button.style.backgroundColor = tag.color;
-    button.textContent = `${tag.name} ×`;
+    button.className = 'inline-flex items-center gap-1.5 border border-stone-300 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 hover:border-stone-900';
+    button.innerHTML = `<span class="h-2 w-2 rounded-sm" style="background-color: ${tag.color ?? '#78716c'}"></span>${tag.name} ×`;
 
     return button;
 };
@@ -34,7 +33,7 @@ const createAvailableChip = (tag) => {
     button.type = 'button';
     button.dataset.tagId = String(tag.id);
     button.dataset.action = 'attach';
-    button.className = 'inline-flex items-center rounded-full border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50';
+    button.className = 'inline-flex items-center gap-1.5 border border-dashed border-stone-300 px-2.5 py-1 text-xs text-stone-600 hover:border-stone-500 hover:text-stone-900';
     button.textContent = `+ ${tag.name}`;
 
     return button;

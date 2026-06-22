@@ -1,139 +1,130 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Projects') }}
-            </h2>
-
-            <x-primary-button
-                x-data=""
-                x-on:click.prevent="$dispatch('open-modal', 'create-project')"
-            >{{ __('New Project') }}</x-primary-button>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h1 class="page-title">{{ __('Projects') }}</h1>
+                <p class="page-subtitle">{{ __('Manage projects and their issues') }}</p>
+            </div>
+            <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-project')">{{ __('New project') }}</x-primary-button>
         </div>
     </x-slot>
 
     <x-modal name="create-project" :show="session('open_modal') === 'create-project'" focusable>
         <form method="post" action="{{ route('projects.store') }}" class="p-6">
             @csrf
-
-            <h2 class="text-lg font-medium text-gray-900">{{ __('New Project') }}</h2>
-
-            <div class="mt-6 space-y-6">
+            <h2 class="text-lg font-semibold tracking-tight text-stone-900">{{ __('New project') }}</h2>
+            <div class="mt-6 space-y-5">
                 <div>
                     <x-input-label for="name" :value="__('Name')" />
-                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required autofocus />
+                    <x-text-input id="name" name="name" type="text" class="mt-1" :value="old('name')" required autofocus />
                     <x-input-error class="mt-2" :messages="$errors->get('name')" />
                 </div>
                 <div>
                     <x-input-label for="description" :value="__('Description')" />
-                    <textarea id="description" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
+                    <textarea id="description" name="description" rows="4" class="input mt-1">{{ old('description') }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('description')" />
                 </div>
-                <div>
-                    <x-input-label for="start_date" :value="__('Start date')" />
-                    <x-text-input id="start_date" name="start_date" type="date" class="mt-1 block w-full" :value="old('start_date')" />
-                    <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
-                </div>
-                <div>
-                    <x-input-label for="deadline" :value="__('Deadline')" />
-                    <x-text-input id="deadline" name="deadline" type="date" class="mt-1 block w-full" :value="old('deadline')" />
-                    <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <x-input-label for="start_date" :value="__('Start date')" />
+                        <x-text-input id="start_date" name="start_date" type="date" class="mt-1" :value="old('start_date')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
+                    </div>
+                    <div>
+                        <x-input-label for="deadline" :value="__('Deadline')" />
+                        <x-text-input id="deadline" name="deadline" type="date" class="mt-1" :value="old('deadline')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
+                    </div>
                 </div>
             </div>
-
             <div class="mt-6 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                <x-primary-button>{{ __('Create Project') }}</x-primary-button>
+                <x-primary-button>{{ __('Create') }}</x-primary-button>
             </div>
         </form>
     </x-modal>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('status') === 'project-created')
-                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project created successfully.') }}</div>
-            @elseif (session('status') === 'project-updated')
-                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project updated successfully.') }}</div>
-            @elseif (session('status') === 'project-deleted')
-                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project deleted successfully.') }}</div>
-            @endif
+    <x-page-container>
+        <x-flash-message />
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    @if ($projects->isEmpty())
-                        <p class="text-gray-500">{{ __('No projects yet.') }}</p>
-                    @else
-                        <ul class="divide-y divide-gray-200">
-                            @foreach ($projects as $project)
-                                <li class="py-4 flex items-start justify-between gap-4">
-                                    <div>
-                                        <a href="{{ route('projects.show', $project) }}" class="text-lg font-medium text-gray-900 hover:text-indigo-600">
-                                            {{ $project->name }}
-                                        </a>
-                                        @if ($project->description)
-                                            <p class="mt-1 text-sm text-gray-600">{{ $project->description }}</p>
-                                        @endif
-                                        @if ($project->start_date || $project->deadline)
-                                            <p class="mt-1 text-xs text-gray-400">
-                                                @if ($project->start_date)
-                                                    {{ __('Start') }}: {{ $project->start_date->format('M j, Y') }}
-                                                @endif
-                                                @if ($project->start_date && $project->deadline)
-                                                    <span class="mx-1">·</span>
-                                                @endif
-                                                @if ($project->deadline)
-                                                    {{ __('Deadline') }}: {{ $project->deadline->format('M j, Y') }}
-                                                @endif
-                                            </p>
-                                        @endif
-                                        <p class="mt-1 text-xs text-gray-400">
-                                            {{ trans_choice(':count issue|:count issues', $project->issues_count, ['count' => $project->issues_count]) }}
-                                        </p>
-                                    </div>
-                                    <div class="flex shrink-0 gap-2">
-                                        <x-secondary-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->editModalName() }}')">{{ __('Edit') }}</x-secondary-button>
-                                        <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->deleteModalName() }}')">{{ __('Delete') }}</x-danger-button>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
+        @if ($projects->isEmpty())
+            <x-empty-state :title="__('No projects yet')" :description="__('Create your first project to start tracking issues.')">
+                <x-slot name="action">
+                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-project')">{{ __('Create project') }}</x-primary-button>
+                </x-slot>
+            </x-empty-state>
+        @else
+            <ul class="panel divide-y divide-stone-200 px-5">
+                @foreach ($projects as $project)
+                    <li class="list-row">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <a href="{{ route('projects.show', $project) }}" class="link !no-underline hover:underline text-base">{{ $project->name }}</a>
+                                    @if ($project->isDeadlineOverdue())
+                                        <span class="text-xs font-medium text-red-600">{{ __('Overdue') }}</span>
+                                    @elseif ($project->isDeadlineSoon())
+                                        <span class="text-xs font-medium text-amber-700">{{ __('Due soon') }}</span>
+                                    @endif
+                                </div>
+                                @if ($project->description)
+                                    <p class="meta mt-2">{{ Str::limit($project->description, 140) }}</p>
+                                @endif
+                                <dl class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-stone-500">
+                                    <div>{{ trans_choice(':count issue|:count issues', $project->issues_count, ['count' => $project->issues_count]) }}</div>
+                                    @if ($project->start_date)
+                                        <div>{{ __('Start') }} {{ $project->start_date->format('M j, Y') }}</div>
+                                    @endif
+                                    @if ($project->deadline)
+                                        <div class="{{ $project->isDeadlineOverdue() ? 'text-red-600' : '' }}">{{ __('Deadline') }} {{ $project->deadline->format('M j, Y') }}</div>
+                                    @endif
+                                </dl>
+                            </div>
+                            <div class="flex shrink-0 gap-3 text-sm">
+                                <a href="{{ route('projects.show', $project) }}" class="font-medium text-stone-900 hover:underline">{{ __('Open') }}</a>
+                                <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->editModalName() }}')" class="text-stone-500 hover:text-stone-900">{{ __('Edit') }}</button>
+                                <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->deleteModalName() }}')" class="text-red-600 hover:text-red-700">{{ __('Delete') }}</button>
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-page-container>
 
     @foreach ($projects as $project)
         <x-modal :name="$project->editModalName()" :show="session('open_modal') === $project->editModalName()" focusable>
             <form method="post" action="{{ route('projects.update', $project) }}" class="p-6">
                 @csrf
                 @method('patch')
-                <h2 class="text-lg font-medium text-gray-900">{{ __('Edit Project') }}</h2>
-                <div class="mt-6 space-y-6">
+                <h2 class="text-lg font-semibold tracking-tight text-stone-900">{{ __('Edit project') }}</h2>
+                <div class="mt-6 space-y-5">
                     <div>
                         <x-input-label for="name-{{ $project->id }}" :value="__('Name')" />
-                        <x-text-input id="name-{{ $project->id }}" name="name" type="text" class="mt-1 block w-full" :value="old('name', $project->name)" required autofocus />
+                        <x-text-input id="name-{{ $project->id }}" name="name" type="text" class="mt-1" :value="old('name', $project->name)" required autofocus />
                         <x-input-error class="mt-2" :messages="$errors->get('name')" />
                     </div>
                     <div>
                         <x-input-label for="description-{{ $project->id }}" :value="__('Description')" />
-                        <textarea id="description-{{ $project->id }}" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
+                        <textarea id="description-{{ $project->id }}" name="description" rows="4" class="input mt-1">{{ old('description', $project->description) }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('description')" />
                     </div>
-                    <div>
-                        <x-input-label for="start_date-{{ $project->id }}" :value="__('Start date')" />
-                        <x-text-input id="start_date-{{ $project->id }}" name="start_date" type="date" class="mt-1 block w-full" :value="old('start_date', $project->start_date?->format('Y-m-d'))" />
-                        <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
-                    </div>
-                    <div>
-                        <x-input-label for="deadline-{{ $project->id }}" :value="__('Deadline')" />
-                        <x-text-input id="deadline-{{ $project->id }}" name="deadline" type="date" class="mt-1 block w-full" :value="old('deadline', $project->deadline?->format('Y-m-d'))" />
-                        <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <x-input-label for="start_date-{{ $project->id }}" :value="__('Start date')" />
+                            <x-text-input id="start_date-{{ $project->id }}" name="start_date" type="date" class="mt-1" :value="old('start_date', $project->start_date?->format('Y-m-d'))" />
+                            <x-input-error class="mt-2" :messages="$errors->get('start_date')" />
+                        </div>
+                        <div>
+                            <x-input-label for="deadline-{{ $project->id }}" :value="__('Deadline')" />
+                            <x-text-input id="deadline-{{ $project->id }}" name="deadline" type="date" class="mt-1" :value="old('deadline', $project->deadline?->format('Y-m-d'))" />
+                            <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
+                        </div>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
                     <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                    <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
+                    <x-primary-button>{{ __('Save') }}</x-primary-button>
                 </div>
             </form>
         </x-modal>
@@ -142,13 +133,13 @@
             <form method="post" action="{{ route('projects.destroy', $project) }}" class="p-6">
                 @csrf
                 @method('delete')
-                <h2 class="text-lg font-medium text-gray-900">{{ __('Delete Project') }}</h2>
-                <p class="mt-1 text-sm text-gray-600">
-                    {{ __('Are you sure you want to delete ":name"? All issues in this project will also be deleted.', ['name' => $project->name]) }}
+                <h2 class="text-lg font-semibold tracking-tight text-stone-900">{{ __('Delete project') }}</h2>
+                <p class="mt-2 text-sm text-stone-600">
+                    {{ __('Delete ":name" and all its issues?', ['name' => $project->name]) }}
                 </p>
                 <div class="mt-6 flex justify-end gap-3">
                     <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                    <x-danger-button>{{ __('Delete Project') }}</x-danger-button>
+                    <x-danger-button>{{ __('Delete') }}</x-danger-button>
                 </div>
             </form>
         </x-modal>
