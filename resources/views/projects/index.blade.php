@@ -12,11 +12,41 @@
         </div>
     </x-slot>
 
-    @include('projects.partials.create-modal')
+    <x-modal name="create-project" :show="session('open_modal') === 'create-project'" focusable>
+        <form method="post" action="{{ route('projects.store') }}" class="p-6">
+            @csrf
+
+            <h2 class="text-lg font-medium text-gray-900">{{ __('New Project') }}</h2>
+
+            <div class="mt-6 space-y-6">
+                <div>
+                    <x-input-label for="name" :value="__('Name')" />
+                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required autofocus />
+                    <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                </div>
+                <div>
+                    <x-input-label for="description" :value="__('Description')" />
+                    <textarea id="description" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button>{{ __('Create Project') }}</x-primary-button>
+            </div>
+        </form>
+    </x-modal>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @include('projects.partials.flash-status')
+            @if (session('status') === 'project-created')
+                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project created successfully.') }}</div>
+            @elseif (session('status') === 'project-updated')
+                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project updated successfully.') }}</div>
+            @elseif (session('status') === 'project-deleted')
+                <div class="mb-4 text-sm font-medium text-green-600">{{ __('Project deleted successfully.') }}</div>
+            @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
@@ -37,8 +67,10 @@
                                             {{ trans_choice(':count issue|:count issues', $project->issues_count, ['count' => $project->issues_count]) }}
                                         </p>
                                     </div>
-
-                                    @include('projects.partials.actions', ['project' => $project])
+                                    <div class="flex shrink-0 gap-2">
+                                        <x-secondary-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->editModalName() }}')">{{ __('Edit') }}</x-secondary-button>
+                                        <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ $project->deleteModalName() }}')">{{ __('Delete') }}</x-danger-button>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
@@ -49,7 +81,43 @@
     </div>
 
     @foreach ($projects as $project)
-        @include('projects.partials.edit-modal', ['project' => $project])
-        @include('projects.partials.delete-modal', ['project' => $project])
+        <x-modal :name="$project->editModalName()" :show="session('open_modal') === $project->editModalName()" focusable>
+            <form method="post" action="{{ route('projects.update', $project) }}" class="p-6">
+                @csrf
+                @method('patch')
+                <h2 class="text-lg font-medium text-gray-900">{{ __('Edit Project') }}</h2>
+                <div class="mt-6 space-y-6">
+                    <div>
+                        <x-input-label for="name-{{ $project->id }}" :value="__('Name')" />
+                        <x-text-input id="name-{{ $project->id }}" name="name" type="text" class="mt-1 block w-full" :value="old('name', $project->name)" required autofocus />
+                        <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                    </div>
+                    <div>
+                        <x-input-label for="description-{{ $project->id }}" :value="__('Description')" />
+                        <textarea id="description-{{ $project->id }}" name="description" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $project->description) }}</textarea>
+                        <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                    <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
+                </div>
+            </form>
+        </x-modal>
+
+        <x-modal :name="$project->deleteModalName()" focusable>
+            <form method="post" action="{{ route('projects.destroy', $project) }}" class="p-6">
+                @csrf
+                @method('delete')
+                <h2 class="text-lg font-medium text-gray-900">{{ __('Delete Project') }}</h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    {{ __('Are you sure you want to delete ":name"? All issues in this project will also be deleted.', ['name' => $project->name]) }}
+                </p>
+                <div class="mt-6 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                    <x-danger-button>{{ __('Delete Project') }}</x-danger-button>
+                </div>
+            </form>
+        </x-modal>
     @endforeach
 </x-app-layout>
