@@ -45,8 +45,10 @@ class Project extends Model
 
     public function isDeadlineSoon(): bool
     {
-        return $this->deadline
-            && ! $this->deadline->isPast()
-            && $this->deadline->diffInDays(now()) <= 7;
+        if (! $this->deadline || $this->deadline->isPast()) {
+            return false;
+        }
+
+        return now()->diffInDays($this->deadline) <= 7;
     }
 }

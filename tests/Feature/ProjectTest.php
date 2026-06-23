@@ -120,4 +120,22 @@ class ProjectTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors('name');
     }
+
+    public function test_deadline_soon_is_false_for_dates_more_than_a_week_away(): void
+    {
+        $project = Project::factory()->create([
+            'deadline' => now()->addMonths(3),
+        ]);
+
+        $this->assertFalse($project->isDeadlineSoon());
+    }
+
+    public function test_deadline_soon_is_true_within_seven_days(): void
+    {
+        $project = Project::factory()->create([
+            'deadline' => now()->addDays(5),
+        ]);
+
+        $this->assertTrue($project->isDeadlineSoon());
+    }
 }
