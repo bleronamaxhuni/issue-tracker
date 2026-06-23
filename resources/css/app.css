@@ -37,6 +37,14 @@
         @apply border-b border-stone-200 py-5 last:border-0;
     }
 
+    .list-row-link {
+        @apply -mx-5 block px-5 py-5 transition-colors hover:bg-stone-50;
+    }
+
+    .list-row-hover {
+        @apply -mx-5 px-5 py-5 transition-colors hover:bg-stone-50;
+    }
+
     .page-title {
         @apply text-2xl font-semibold tracking-tight text-stone-900;
     }

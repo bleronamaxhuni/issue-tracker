@@ -74,10 +74,10 @@
             @else
                 <ul class="panel divide-y divide-stone-200 px-5">
                     @foreach ($project->issues as $issue)
-                        <li class="list-row">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <li class="list-row !py-0">
+                            <div class="list-row-hover group flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="min-w-0 flex-1">
-                                    <a href="{{ route('issues.show', $issue) }}" class="link !no-underline hover:underline">{{ $issue->title }}</a>
+                                    <a href="{{ route('issues.show', $issue) }}" class="font-medium text-stone-900 group-hover:underline decoration-stone-400 underline-offset-2">{{ $issue->title }}</a>
                                     @if ($excerpt = $issuePresenter->excerpt($issue, 120))
                                         <p class="meta mt-2">{{ $excerpt }}</p>
                                     @endif
