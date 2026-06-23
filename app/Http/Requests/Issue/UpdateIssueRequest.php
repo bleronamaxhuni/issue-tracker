@@ -25,7 +25,7 @@ class UpdateIssueRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
-        session()->flash('open_modal', $this->route('issue')->editModalName());
+        session()->flash('open_modal', 'edit-issue-'.$this->route('issue')->id);
 
         parent::failedValidation($validator);
     }

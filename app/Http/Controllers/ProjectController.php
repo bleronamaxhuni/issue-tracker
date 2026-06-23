@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Models\Project;
+use App\Services\ProjectService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,18 +17,19 @@ class ProjectController extends Controller
             ->projects()
             ->withCount('issues')
             ->latest()
-            ->get();
+            ->paginate(5);
 
-        return view('projects.index', compact('projects'));
+        return view('projects.index', [
+            'projects' => $projects,
+            'blankProject' => new Project(),
+        ]);
     }
 
-    public function show(Project $project): View
+    public function show(Project $project, ProjectService $projects): View
     {
         $this->authorize('view', $project);
 
-        $project->load(['issues' => fn ($query) => $query->latest()]);
-
-        return view('projects.show', compact('project'));
+        return view('projects.show', $projects->showViewData($project));
     }
 
     public function store(StoreProjectRequest $request): RedirectResponse

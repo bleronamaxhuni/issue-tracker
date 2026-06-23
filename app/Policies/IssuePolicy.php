@@ -10,7 +10,8 @@ class IssuePolicy
 {
     public function view(User $user, Issue $issue): bool
     {
-        return $this->ownsProject($user, $issue->project);
+        return $this->ownsProject($user, $issue->project)
+            || $this->isAssignee($user, $issue);
     }
 
     public function update(User $user, Issue $issue): bool
@@ -21,6 +22,11 @@ class IssuePolicy
     public function delete(User $user, Issue $issue): bool
     {
         return $this->ownsProject($user, $issue->project);
+    }
+
+    private function isAssignee(User $user, Issue $issue): bool
+    {
+        return $issue->assignees()->where('users.id', $user->id)->exists();
     }
 
     private function ownsProject(User $user, Project $project): bool

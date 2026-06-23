@@ -33,14 +33,9 @@ class Project extends Model
         return $this->hasMany(Issue::class);
     }
 
-    public function editModalName(): string
+    public function isOwnedBy(User $user): bool
     {
-        return 'edit-project-'.$this->id;
-    }
-
-    public function deleteModalName(): string
-    {
-        return 'delete-project-'.$this->id;
+        return $this->user_id === $user->id;
     }
 
     public function isDeadlineOverdue(): bool

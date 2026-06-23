@@ -48,19 +48,9 @@ class Issue extends Model
 
     public const PRIORITIES = ['low', 'medium', 'high'];
 
-    public function editModalName(): string
+    public function isOwnedBy(User $user): bool
     {
-        return 'edit-issue-'.$this->id;
-    }
-
-    public function deleteModalName(): string
-    {
-        return 'delete-issue-'.$this->id;
-    }
-
-    public function statusLabel(): string
-    {
-        return str_replace('_', ' ', $this->status);
+        return $this->project->isOwnedBy($user);
     }
 
     public function isOverdue(): bool
@@ -75,7 +65,11 @@ class Issue extends Model
      */
     public function scopeForUser(Builder $query, User $user): void
     {
-        $query->whereHas('project', fn (Builder $projectQuery) => $projectQuery->where('user_id', $user->id));
+        $query->where(function (Builder $issueQuery) use ($user) {
+            $issueQuery
+                ->whereHas('project', fn(Builder $projectQuery) => $projectQuery->where('user_id', $user->id))
+                ->orWhereHas('assignees', fn(Builder $assigneeQuery) => $assigneeQuery->where('users.id', $user->id));
+        });
     }
 
     /**
@@ -85,14 +79,14 @@ class Issue extends Model
     public function scopeFiltered(Builder $query, array $filters): void
     {
         $query
-            ->when($filters['status'] ?? null, fn (Builder $issueQuery, string $status) => $issueQuery->where('status', $status))
-            ->when($filters['priority'] ?? null, fn (Builder $issueQuery, string $priority) => $issueQuery->where('priority', $priority))
-            ->when($filters['tag'] ?? null, fn (Builder $issueQuery, string $tag) => $issueQuery->whereHas(
+            ->when($filters['status'] ?? null, fn(Builder $issueQuery, string $status) => $issueQuery->where('status', $status))
+            ->when($filters['priority'] ?? null, fn(Builder $issueQuery, string $priority) => $issueQuery->where('priority', $priority))
+            ->when($filters['tag'] ?? null, fn(Builder $issueQuery, string $tag) => $issueQuery->whereHas(
                 'tags',
-                fn (Builder $tagQuery) => $tagQuery->where('tags.id', $tag)
+                fn(Builder $tagQuery) => $tagQuery->where('tags.id', $tag)
             ))
             ->when($filters['search'] ?? null, function (Builder $issueQuery, string $search) {
-                $term = '%'.$search.'%';
+                $term = '%' . $search . '%';
 
                 $issueQuery->where(function (Builder $searchQuery) use ($term) {
                     $searchQuery

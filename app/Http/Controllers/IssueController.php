@@ -8,24 +8,27 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\IssueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class IssueController extends Controller
 {
+    public function __construct(private IssueService $issues) {}
+
     public function index(Request $request): View|JsonResponse
     {
-        $issues = $this->issuesForRequest($request);
-        $filters = $this->filtersFromRequest($request);
+        $issues = $this->issues->paginatedForRequest($request);
+        $filters = $this->issues->filtersFromRequest($request);
+        $hasActiveFilters = $this->issues->hasActiveFilters($filters);
 
         if ($request->wantsJson()) {
             return response()->json([
-                'html' => view('issues._results', compact('issues', 'filters'))->render(),
-                'count' => $issues->count(),
-                'count_label' => trans_choice(':count issue|:count issues', $issues->count(), ['count' => $issues->count()]),
+                'html' => view('issues.partials.results', compact('issues', 'filters', 'hasActiveFilters'))->render(),
+                'count' => $issues->total(),
+                'count_label' => trans_choice(':count issue|:count issues', $issues->total(), ['count' => $issues->total()]),
             ]);
         }
 
@@ -33,23 +36,14 @@ class IssueController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('issues.index', [
-            'issues' => $issues,
-            'tags' => $tags,
-            'filters' => $filters,
-        ]);
+        return view('issues.index', compact('issues', 'tags', 'filters', 'hasActiveFilters'));
     }
 
     public function show(Issue $issue): View
     {
         $this->authorize('view', $issue);
 
-        $issue->load(['project', 'tags', 'assignees']);
-
-        $allTags = Tag::query()->orderBy('name')->get();
-        $allUsers = User::query()->orderBy('name')->get();
-
-        return view('issues.show', compact('issue', 'allTags', 'allUsers'));
+        return view('issues.show', $this->issues->showViewData($issue, auth()->user()));
     }
 
     public function store(StoreIssueRequest $request, Project $project): RedirectResponse
@@ -86,16 +80,14 @@ class IssueController extends Controller
     {
         $this->authorize('update', $issue);
 
-        if ($issue->tags()->where('tags.id', $tag->id)->exists()) {
+        if (! $this->issues->attachTag($issue, $tag)) {
             return response()->json([
                 'message' => __('This tag is already attached.'),
             ], 422);
         }
 
-        $issue->tags()->attach($tag);
-
         return response()->json([
-            'tag' => $this->tagPayload($tag),
+            'tag' => $this->issues->tagPayload($tag),
         ]);
     }
 
@@ -103,10 +95,10 @@ class IssueController extends Controller
     {
         $this->authorize('update', $issue);
 
-        $issue->tags()->detach($tag);
+        $this->issues->detachTag($issue, $tag);
 
         return response()->json([
-            'tag' => $this->tagPayload($tag),
+            'tag' => $this->issues->tagPayload($tag),
         ]);
     }
 
@@ -114,16 +106,14 @@ class IssueController extends Controller
     {
         $this->authorize('update', $issue);
 
-        if ($issue->assignees()->where('users.id', $user->id)->exists()) {
+        if (! $this->issues->attachAssignee($issue, $user)) {
             return response()->json([
                 'message' => __('This member is already assigned.'),
             ], 422);
         }
 
-        $issue->assignees()->attach($user);
-
         return response()->json([
-            'user' => $this->assigneePayload($user),
+            'user' => $this->issues->assigneePayload($user),
         ]);
     }
 
@@ -131,58 +121,10 @@ class IssueController extends Controller
     {
         $this->authorize('update', $issue);
 
-        $issue->assignees()->detach($user);
+        $this->issues->detachAssignee($issue, $user);
 
         return response()->json([
-            'user' => $this->assigneePayload($user),
+            'user' => $this->issues->assigneePayload($user),
         ]);
-    }
-
-    /**
-     * @return Collection<int, Issue>
-     */
-    private function issuesForRequest(Request $request): Collection
-    {
-        return Issue::query()
-            ->forUser($request->user())
-            ->with(['project', 'tags'])
-            ->filtered($this->filtersFromRequest($request))
-            ->latest()
-            ->get();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function filtersFromRequest(Request $request): array
-    {
-        return array_filter(
-            $request->only(['status', 'priority', 'tag', 'search']),
-            fn (mixed $value) => filled($value),
-        );
-    }
-
-    /**
-     * @return array<string, int|string|null>
-     */
-    private function tagPayload(Tag $tag): array
-    {
-        return [
-            'id' => $tag->id,
-            'name' => $tag->name,
-            'color' => $tag->color ?? '#6b7280',
-        ];
-    }
-
-    /**
-     * @return array<string, int|string>
-     */
-    private function assigneePayload(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ];
     }
 }

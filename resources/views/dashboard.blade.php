@@ -42,7 +42,12 @@
                     @foreach ($recentIssues as $issue)
                         <li class="list-row">
                             <a href="{{ route('issues.show', $issue) }}" class="link !no-underline hover:underline">{{ $issue->title }}</a>
-                            <p class="meta mt-1">{{ $issue->project->name }}</p>
+                            <p class="meta mt-1">
+                                {{ $issue->project->name }}
+                                @if ($issue->is_assigned_only)
+                                    <span class="text-xs text-stone-400">({{ __('assigned to you') }})</span>
+                                @endif
+                            </p>
                             <div class="mt-2 flex flex-wrap items-center gap-3">
                                 <x-issue-status-badge :status="$issue->status" />
                                 <x-issue-priority-badge :priority="$issue->priority" />
@@ -76,11 +81,7 @@
                                     <a href="{{ route('projects.show', $project) }}" class="link !no-underline hover:underline">{{ $project->name }}</a>
                                     <p class="meta mt-1">{{ trans_choice(':count issue|:count issues', $project->issues_count, ['count' => $project->issues_count]) }}</p>
                                 </div>
-                                @if ($project->isDeadlineOverdue())
-                                    <span class="text-xs font-medium text-red-600">{{ __('Overdue') }}</span>
-                                @elseif ($project->isDeadlineSoon())
-                                    <span class="text-xs font-medium text-amber-700">{{ __('Due soon') }}</span>
-                                @endif
+                                <x-project-deadline-badge :project="$project" />
                             </div>
                         </li>
                     @endforeach

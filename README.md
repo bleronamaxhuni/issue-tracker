@@ -8,7 +8,7 @@ A mini issue tracker built with Laravel where a small team can manage projects, 
 - **Laravel Breeze** (Blade stack)
 - **Tailwind CSS** + **Alpine.js**
 - **Vite**
-- **SQLite** (default)
+- **MySQL**
 
 ## Features
 

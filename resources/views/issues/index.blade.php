@@ -20,9 +20,9 @@
                     <x-input-label for="status" :value="__('Status')" />
                     <select id="status" name="status" data-filter-select class="input mt-1">
                         <option value="">{{ __('All') }}</option>
-                        @foreach (\App\Models\Issue::STATUSES as $status)
+                        @foreach ($issueStatuses as $status)
                             <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>
-                                {{ str_replace('_', ' ', $status) }}</option>
+                                {{ $issueStatusLabels[$status] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -30,7 +30,7 @@
                     <x-input-label for="priority" :value="__('Priority')" />
                     <select id="priority" name="priority" data-filter-select class="input mt-1">
                         <option value="">{{ __('All') }}</option>
-                        @foreach (\App\Models\Issue::PRIORITIES as $priority)
+                        @foreach ($issuePriorities as $priority)
                             <option value="{{ $priority }}" @selected(($filters['priority'] ?? '') === $priority)>{{ $priority }}
                             </option>
                         @endforeach
@@ -46,7 +46,7 @@
                         @endforeach
                     </select>
                 </div>
-                @if (!empty($filters))
+                @if ($hasActiveFilters)
                     <div class="sm:col-span-2 lg:col-span-4">
                         <a href="{{ route('issues.index') }}"
                             class="text-sm text-stone-500 hover:text-stone-900">{{ __('Clear filters') }}</a>
@@ -55,7 +55,7 @@
             </form>
 
             <section id="issue-results" class="mt-8" data-results>
-                @include('issues._results', ['issues' => $issues, 'filters' => $filters])
+                @include('issues.partials.results', compact('issues', 'filters', 'hasActiveFilters'))
             </section>
 
             <p data-search-status class="mt-2 hidden text-sm text-stone-500" aria-live="polite"></p>

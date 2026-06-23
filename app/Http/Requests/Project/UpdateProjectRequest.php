@@ -25,7 +25,7 @@ class UpdateProjectRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
-        session()->flash('open_modal', $this->route('project')->editModalName());
+        session()->flash('open_modal', 'edit-project-'.$this->route('project')->id);
 
         parent::failedValidation($validator);
     }
