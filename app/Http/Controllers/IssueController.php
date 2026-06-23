@@ -7,6 +7,7 @@ use App\Http\Requests\Issue\UpdateIssueRequest;
 use App\Models\Issue;
 use App\Models\Project;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,11 +44,12 @@ class IssueController extends Controller
     {
         $this->authorize('view', $issue);
 
-        $issue->load(['project', 'tags']);
+        $issue->load(['project', 'tags', 'assignees']);
 
         $allTags = Tag::query()->orderBy('name')->get();
+        $allUsers = User::query()->orderBy('name')->get();
 
-        return view('issues.show', compact('issue', 'allTags'));
+        return view('issues.show', compact('issue', 'allTags', 'allUsers'));
     }
 
     public function store(StoreIssueRequest $request, Project $project): RedirectResponse
@@ -108,6 +110,34 @@ class IssueController extends Controller
         ]);
     }
 
+    public function attachAssignee(Issue $issue, User $user): JsonResponse
+    {
+        $this->authorize('update', $issue);
+
+        if ($issue->assignees()->where('users.id', $user->id)->exists()) {
+            return response()->json([
+                'message' => __('This member is already assigned.'),
+            ], 422);
+        }
+
+        $issue->assignees()->attach($user);
+
+        return response()->json([
+            'user' => $this->assigneePayload($user),
+        ]);
+    }
+
+    public function detachAssignee(Issue $issue, User $user): JsonResponse
+    {
+        $this->authorize('update', $issue);
+
+        $issue->assignees()->detach($user);
+
+        return response()->json([
+            'user' => $this->assigneePayload($user),
+        ]);
+    }
+
     /**
      * @return Collection<int, Issue>
      */
@@ -141,6 +171,18 @@ class IssueController extends Controller
             'id' => $tag->id,
             'name' => $tag->name,
             'color' => $tag->color ?? '#6b7280',
+        ];
+    }
+
+    /**
+     * @return array<string, int|string>
+     */
+    private function assigneePayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
         ];
     }
 }

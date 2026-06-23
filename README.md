@@ -14,7 +14,7 @@ A mini issue tracker built with Laravel where a small team can manage projects, 
 
 - **Authentication** — register, login, profile management (Breeze)
 - **Projects** — CRUD with modals, owner-only access, `start_date` and `deadline`
-- **Issues** — CRUD scoped to projects, global index with filters (status, priority, tag) and debounced text search
+- **Issues** — CRUD scoped to projects, global index with filters (status, priority, tag) and debounced text search; assign members via AJAX
 - **Tags** — create and list tags; attach/detach on issue detail via AJAX
 - **Comments** — paginated load and inline add on issue detail via AJAX (no full page reload)
 - **Authorization** — `ProjectPolicy` and `IssuePolicy` restrict access to project owners
@@ -89,10 +89,12 @@ php artisan test
 |--------|-------|---------|
 | `POST` | `/issues/{issue}/tags/{tag}` | Attach tag to issue |
 | `DELETE` | `/issues/{issue}/tags/{tag}` | Detach tag from issue |
+| `POST` | `/issues/{issue}/assignees/{user}` | Assign member to issue |
+| `DELETE` | `/issues/{issue}/assignees/{user}` | Remove assignee from issue |
 | `GET` | `/issues/{issue}/comments` | Paginated comments (JSON) |
 | `POST` | `/issues/{issue}/comments` | Add comment (JSON) |
 
-Frontend logic lives in `resources/js/issue-tags.js`, `resources/js/issue-comments.js`, and `resources/js/issue-search.js`.
+Frontend logic lives in `resources/js/issue-tags.js`, `resources/js/issue-comments.js`, `resources/js/issue-search.js`, and `resources/js/issue-assignees.js`.
 
 Issue search uses `GET /issues?search=...` (with optional status, priority, and tag params). The issues index fetches JSON responses as you type (300ms debounce) without reloading the page.
 

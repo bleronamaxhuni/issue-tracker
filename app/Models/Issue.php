@@ -39,6 +39,11 @@ class Issue extends Model
         return $this->belongsToMany(Tag::class);
     }
 
+    public function assignees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
+
     public const STATUSES = ['open', 'in_progress', 'closed'];
 
     public const PRIORITIES = ['low', 'medium', 'high'];

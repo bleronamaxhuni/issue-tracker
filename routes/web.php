@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('issues/{issue}/tags/{tag}', [IssueController::class, 'detachTag'])->name('issues.tags.detach');
     Route::resource('tags', TagController::class)->only(['index', 'store']);
 
+    // Assignees
+    Route::post('issues/{issue}/assignees/{user}', [IssueController::class, 'attachAssignee'])->name('issues.assignees.attach');
+    Route::delete('issues/{issue}/assignees/{user}', [IssueController::class, 'detachAssignee'])->name('issues.assignees.detach');
+
 
     // Comments
     Route::get('issues/{issue}/comments', [CommentController::class, 'index'])->name('issues.comments.index');

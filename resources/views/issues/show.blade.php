@@ -112,6 +112,51 @@
 
         <section class="panel p-5">
             <div
+                id="issue-assignees"
+                data-attach-url="{{ route('issues.assignees.attach', ['issue' => $issue, 'user' => '__USER__']) }}"
+                data-detach-url="{{ route('issues.assignees.detach', ['issue' => $issue, 'user' => '__USER__']) }}"
+            >
+                <h2 class="section-title">{{ __('Assignees') }}</h2>
+                <p class="meta mt-2">{{ __('Click to assign or remove team members.') }}</p>
+                <p data-assignee-error class="mt-2 text-sm text-red-600 hidden"></p>
+
+                <div class="mt-5">
+                    <h3 class="text-xs font-medium text-stone-500">{{ __('Assigned') }}</h3>
+                    <p data-empty-attached class="meta mt-2 @if ($issue->assignees->isNotEmpty()) hidden @endif">{{ __('None') }}</p>
+                    <div data-attached-assignees class="mt-2 flex flex-wrap gap-2">
+                        @foreach ($issue->assignees as $assignee)
+                            <button
+                                type="button"
+                                data-action="detach"
+                                data-user-id="{{ $assignee->id }}"
+                                class="inline-flex items-center gap-2 border border-stone-300 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 hover:border-stone-900"
+                                title="{{ $assignee->email }}"
+                            >{{ $assignee->name }} ×</button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-xs font-medium text-stone-500">{{ __('Available') }}</h3>
+                    @php $assignedIds = $issue->assignees->pluck('id'); @endphp
+                    <p data-empty-available class="meta mt-2 @if ($allUsers->whereNotIn('id', $assignedIds)->isNotEmpty()) hidden @endif">{{ __('Everyone is assigned') }}</p>
+                    <div data-available-assignees class="mt-2 flex flex-wrap gap-2">
+                        @foreach ($allUsers->whereNotIn('id', $assignedIds) as $user)
+                            <button
+                                type="button"
+                                data-action="attach"
+                                data-user-id="{{ $user->id }}"
+                                class="inline-flex items-center gap-2 border border-dashed border-stone-300 px-2.5 py-1 text-xs text-stone-600 hover:border-stone-500 hover:text-stone-900"
+                                title="{{ $user->email }}"
+                            >+ {{ $user->name }}</button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel p-5">
+            <div
                 id="issue-comments"
                 data-list-url="{{ route('issues.comments.index', $issue) }}"
                 data-store-url="{{ route('issues.comments.store', $issue) }}"

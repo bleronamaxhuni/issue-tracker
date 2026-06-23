@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
             'due_date' => now()->addWeeks(2),
         ]);
         $homepageIssue->tags()->attach([$feature->id, $frontend->id, $urgent->id]);
+        $homepageIssue->assignees()->attach($bob);
 
         $navIssue = Issue::query()->create([
             'project_id' => $website->id,
@@ -150,6 +151,7 @@ class DatabaseSeeder extends Seeder
             'due_date' => now()->addDays(5),
         ]);
         $webhookIssue->tags()->attach([$bug->id, $backend->id, $urgent->id]);
+        $webhookIssue->assignees()->attach($alice);
 
         $versioningIssue = Issue::query()->create([
             'project_id' => $api->id,
