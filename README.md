@@ -14,7 +14,7 @@ A mini issue tracker built with Laravel where a small team can manage projects, 
 
 - **Authentication** — register, login, profile management (Breeze)
 - **Projects** — CRUD with modals, owner-only access, `start_date` and `deadline`
-- **Issues** — CRUD scoped to projects, global index with filters (status, priority, tag)
+- **Issues** — CRUD scoped to projects, global index with filters (status, priority, tag) and debounced text search
 - **Tags** — create and list tags; attach/detach on issue detail via AJAX
 - **Comments** — paginated load and inline add on issue detail via AJAX (no full page reload)
 - **Authorization** — `ProjectPolicy` and `IssuePolicy` restrict access to project owners
@@ -92,7 +92,9 @@ php artisan test
 | `GET` | `/issues/{issue}/comments` | Paginated comments (JSON) |
 | `POST` | `/issues/{issue}/comments` | Add comment (JSON) |
 
-Frontend logic lives in `resources/js/issue-tags.js` and `resources/js/issue-comments.js`.
+Frontend logic lives in `resources/js/issue-tags.js`, `resources/js/issue-comments.js`, and `resources/js/issue-search.js`.
+
+Issue search uses `GET /issues?search=...` (with optional status, priority, and tag params). The issues index fetches JSON responses as you type (300ms debounce) without reloading the page.
 
 ## License
 

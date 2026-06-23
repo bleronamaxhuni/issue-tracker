@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\IssueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -62,5 +63,37 @@ class Issue extends Model
         return $this->due_date
             && $this->status !== 'closed'
             && $this->due_date->isPast();
+    }
+
+    /**
+     * @param  Builder<Issue>  $query
+     */
+    public function scopeForUser(Builder $query, User $user): void
+    {
+        $query->whereHas('project', fn (Builder $projectQuery) => $projectQuery->where('user_id', $user->id));
+    }
+
+    /**
+     * @param  Builder<Issue>  $query
+     * @param  array<string, mixed>  $filters
+     */
+    public function scopeFiltered(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['status'] ?? null, fn (Builder $issueQuery, string $status) => $issueQuery->where('status', $status))
+            ->when($filters['priority'] ?? null, fn (Builder $issueQuery, string $priority) => $issueQuery->where('priority', $priority))
+            ->when($filters['tag'] ?? null, fn (Builder $issueQuery, string $tag) => $issueQuery->whereHas(
+                'tags',
+                fn (Builder $tagQuery) => $tagQuery->where('tags.id', $tag)
+            ))
+            ->when($filters['search'] ?? null, function (Builder $issueQuery, string $search) {
+                $term = '%'.$search.'%';
+
+                $issueQuery->where(function (Builder $searchQuery) use ($term) {
+                    $searchQuery
+                        ->where('title', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            });
     }
 }

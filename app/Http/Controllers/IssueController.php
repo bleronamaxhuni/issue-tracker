@@ -10,23 +10,23 @@ use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class IssueController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
-        $issues = Issue::query()
-            ->whereHas('project', fn ($query) => $query->where('user_id', $request->user()->id))
-            ->with(['project', 'tags'])
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
-            ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->priority))
-            ->when($request->filled('tag'), fn ($query) => $query->whereHas(
-                'tags',
-                fn ($tagQuery) => $tagQuery->where('tags.id', $request->tag)
-            ))
-            ->latest()
-            ->get();
+        $issues = $this->issuesForRequest($request);
+        $filters = $this->filtersFromRequest($request);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html' => view('issues._results', compact('issues', 'filters'))->render(),
+                'count' => $issues->count(),
+                'count_label' => trans_choice(':count issue|:count issues', $issues->count(), ['count' => $issues->count()]),
+            ]);
+        }
 
         $tags = Tag::query()
             ->orderBy('name')
@@ -35,7 +35,7 @@ class IssueController extends Controller
         return view('issues.index', [
             'issues' => $issues,
             'tags' => $tags,
-            'filters' => $request->only(['status', 'priority', 'tag']),
+            'filters' => $filters,
         ]);
     }
 
@@ -106,6 +106,30 @@ class IssueController extends Controller
         return response()->json([
             'tag' => $this->tagPayload($tag),
         ]);
+    }
+
+    /**
+     * @return Collection<int, Issue>
+     */
+    private function issuesForRequest(Request $request): Collection
+    {
+        return Issue::query()
+            ->forUser($request->user())
+            ->with(['project', 'tags'])
+            ->filtered($this->filtersFromRequest($request))
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function filtersFromRequest(Request $request): array
+    {
+        return array_filter(
+            $request->only(['status', 'priority', 'tag', 'search']),
+            fn (mixed $value) => filled($value),
+        );
     }
 
     /**
