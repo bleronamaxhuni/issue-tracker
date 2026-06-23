@@ -13,19 +13,29 @@ A mini issue tracker built with Laravel where a small team can manage projects, 
 ## Features
 
 - **Authentication** — register, login, profile management (Breeze)
-- **Projects** — CRUD with modals, owner-only access, `start_date` and `deadline`
-- **Issues** — CRUD scoped to projects, global index with filters (status, priority, tag) and debounced text search; assign members via AJAX
+- **Projects** — CRUD with modals, owner-only access, `start_date` and `deadline`, paginated index
+- **Issues** — CRUD scoped to projects, paginated global index with filters (status, priority, tag) and debounced text search; assign members via AJAX
 - **Tags** — create and list tags; attach/detach on issue detail via AJAX
 - **Comments** — paginated load and inline add on issue detail via AJAX (no full page reload)
-- **Authorization** — `ProjectPolicy` and `IssuePolicy` restrict access to project owners
+- **Authorization** — `ProjectPolicy` and `IssuePolicy`: project owners manage their projects and issues; assignees can view (but not edit) issues they are assigned to
+
+## Architecture
+
+- **Controllers** — HTTP layer, authorization checks, redirects
+- **Services** — query orchestration and business workflows (`DashboardService`, `IssueService`, `ProjectService`)
+- **Presenters** — display formatting for views and JSON payloads
+- **Policies** — access control for projects and issues
 
 ## Requirements
 
 - PHP 8.3+
 - Composer
 - Node.js 18+ and npm
+- MySQL 8+
 
 ## Setup
+
+Create a MySQL database (e.g. `issue_tracker`), then:
 
 ```bash
 git clone https://github.com/bleronamaxhuni/issue-tracker.git
@@ -34,15 +44,28 @@ cd issue-tracker
 composer install
 cp .env.example .env
 php artisan key:generate
+```
 
-touch database/database.sqlite
+Set your database credentials in `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=issue_tracker
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Then migrate, seed, and build assets:
+
+```bash
 php artisan migrate --seed
-
 npm install
 npm run build
 ```
 
-Or use the Composer setup script (installs dependencies, creates `.env`, migrates, and builds assets):
+Or use the Composer setup script (installs dependencies, creates `.env`, migrates, and builds assets). Configure `.env` with your MySQL credentials before seeding:
 
 ```bash
 composer setup
@@ -78,6 +101,8 @@ After seeding, log in with either account (password for both: `password`):
 Each user owns separate projects with sample issues, tags, and comments. Alice's **Website Redesign → Redesign homepage hero section** issue has 9 comments to demo comment pagination.
 
 ## Tests
+
+Feature tests cover authentication, project/issue CRUD, and authorization (including assignee access). Tests use an in-memory SQLite database via `phpunit.xml` so they do not require MySQL:
 
 ```bash
 php artisan test
